@@ -6,6 +6,7 @@ export class StaticSiteStage extends cdk.Stage {
   public readonly StackName: string;
   constructor(scope: cdk.Construct, id: string, props?: cdk.StageProps) {
     super(scope, id, props);
-    new StaticSiteStack(this, "StaticSite");
+    
+    new StaticSiteStack(this, "StaticSite", props);
   }
 }

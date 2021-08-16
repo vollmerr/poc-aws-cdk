@@ -4,6 +4,7 @@ import * as cdk from "@aws-cdk/core";
 import { PocAwsCdkStack } from "../lib/poc-aws-cdk-stack";
 
 const app = new cdk.App();
+
 new PocAwsCdkStack(app, "PocAwsCdkStack", {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
