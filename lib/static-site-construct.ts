@@ -32,14 +32,20 @@ export class StaticSiteConstruct extends cdk.Construct {
     );
     new cdk.CfnOutput(this, "Site", { value: `https://${siteDomain}` });
 
-    // Content bucket
-    const siteBucket = new s3.Bucket(this, "SiteBucket", {
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      bucketName: `poc-aws-cdk/${targetEnv}`,
-      publicReadAccess: false,
-      websiteIndexDocument: "index.html",
-      versioned: true,
-    });
+    const siteBucket = s3.Bucket.fromBucketName(
+      this,
+      "SiteBucket",
+      "poc-aws-cdk"
+    );
+
+    // // Content bucket - uncomment for initial deploy
+    // const siteBucket = new s3.Bucket(this, "SiteBucket", {
+    //   blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+    //   bucketName: `poc-aws-cdk`,
+    //   publicReadAccess: false,
+    //   websiteIndexDocument: "index.html",
+    //   versioned: true,
+    // });
     // Grant access to cloudfront
     siteBucket.addToResourcePolicy(
       new iam.PolicyStatement({
@@ -107,6 +113,7 @@ export class StaticSiteConstruct extends cdk.Construct {
             s3OriginSource: {
               originAccessIdentity: cloudfrontOAI,
               s3BucketSource: siteBucket,
+              originPath: targetEnv,
             },
           },
         ],
@@ -129,6 +136,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     // Deploy site contents to S3 bucket
     new s3deploy.BucketDeployment(this, "DeployWithInvalidation", {
       destinationBucket: siteBucket,
+      destinationKeyPrefix: targetEnv,
       distribution,
       distributionPaths: ["/*"],
       sources: [s3deploy.Source.asset("./build")],
