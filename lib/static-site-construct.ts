@@ -35,7 +35,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     const siteBucket = s3.Bucket.fromBucketName(
       this,
       "SiteBucket",
-      "poc-aws-cdk"
+      `poc-aws-cdk.${targetEnv}`
     );
 
     // // Content bucket - uncomment for initial deploy
@@ -113,7 +113,6 @@ export class StaticSiteConstruct extends cdk.Construct {
             s3OriginSource: {
               originAccessIdentity: cloudfrontOAI,
               s3BucketSource: siteBucket,
-              originPath: targetEnv,
             },
           },
         ],
@@ -136,7 +135,6 @@ export class StaticSiteConstruct extends cdk.Construct {
     // Deploy site contents to S3 bucket
     new s3deploy.BucketDeployment(this, "DeployWithInvalidation", {
       destinationBucket: siteBucket,
-      destinationKeyPrefix: targetEnv,
       distribution,
       distributionPaths: ["/*"],
       sources: [s3deploy.Source.asset("./build")],
