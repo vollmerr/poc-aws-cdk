@@ -58,7 +58,7 @@ export class StaticSiteConstruct extends cdk.Construct {
         resources: [siteBucket.arnForObjects("*")],
       })
     );
-    new cdk.CfnOutput(this, "Bucket", { value: siteBucket.bucketName });
+    // new cdk.CfnOutput(this, "Bucket", { value: siteBucket.bucketName });
 
     // TLS certificate
     const { certificateArn } = new acm.DnsValidatedCertificate(
