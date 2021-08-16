@@ -18,7 +18,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       selfMutating: true,
       sourceAction: new codepipelineActions.GitHubSourceAction({
         owner: "vollmerr",
-        repo: "poc-aws-sdk",
+        repo: "poc-aws-cdk",
         branch: "main",
         actionName: "Github",
         output: sourceArtifact,
