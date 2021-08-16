@@ -35,7 +35,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     const siteBucket = s3.Bucket.fromBucketName(
       this,
       "SiteBucket",
-      `poc-aws-cdk.${targetEnv}`
+      `poc-aws-cdk-${targetEnv}`
     );
 
     // // Content bucket - uncomment for initial deploy
