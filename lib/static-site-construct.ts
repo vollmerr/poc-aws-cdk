@@ -8,12 +8,16 @@ import * as cloudfront from "@aws-cdk/aws-cloudfront";
 import * as cloudwatch from "@aws-cdk/aws-cloudwatch";
 import * as acm from "@aws-cdk/aws-certificatemanager";
 
+export type StaticSiteConstructProps = {
+  domainName: string;
+};
+
 export class StaticSiteConstruct extends cdk.Construct {
   public readonly StackName: string;
-  constructor(parent: cdk.Stack, id: string) {
+  constructor(parent: cdk.Stack, id: string, props: StaticSiteConstructProps) {
     super(parent, id);
 
-    const domainName = "vollmerr.com";
+    const { domainName } = props;
     const siteDomain = `www.${domainName}`;
     const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
 
