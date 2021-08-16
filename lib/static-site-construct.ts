@@ -10,7 +10,6 @@ import * as acm from "@aws-cdk/aws-certificatemanager";
 
 export type StaticSiteConstructProps = {
   targetEnv: string;
-  commitId: string;
 };
 
 export class StaticSiteConstruct extends cdk.Construct {
@@ -18,10 +17,10 @@ export class StaticSiteConstruct extends cdk.Construct {
   constructor(parent: cdk.Stack, id: string, props: StaticSiteConstructProps) {
     super(parent, id);
 
-    const { targetEnv, commitId } = props;
+    const { targetEnv } = props;
     const domainName = "vollmerr.com";
-    const subdomain = props.targetEnv === "production" ? "" : targetEnv;
-    const siteDomain = `www.${subdomain}${subdomain ? "." : ""}${domainName}`;
+    const subdomain = props.targetEnv === "production" ? "" : `${targetEnv}.`;
+    const siteDomain = `www.${subdomain}${domainName}`;
     const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
 
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(
@@ -36,9 +35,10 @@ export class StaticSiteConstruct extends cdk.Construct {
     // Content bucket
     const siteBucket = new s3.Bucket(this, "SiteBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      bucketName: `poc-aws-cdk/${subdomain}/${commitId}`,
+      bucketName: `poc-aws-cdk/${targetEnv}`,
       publicReadAccess: false,
       websiteIndexDocument: "index.html",
+      versioned: true,
     });
     // Grant access to cloudfront
     siteBucket.addToResourcePolicy(

@@ -43,14 +43,12 @@ export class PocAwsCdkStack extends cdk.Stack {
 
     const deployStaging = new StaticSiteStage(this, "DeployStaging", {
       ...props,
-      commitId: sourceAction.variables.commitId,
       targetEnv: "staging",
     });
     pipeline.addApplicationStage(deployStaging);
 
     const deployProd = new StaticSiteStage(this, "DeployProd", {
       ...props,
-      commitId: sourceAction.variables.commitId,
       targetEnv: "production",
     });
     pipeline.addApplicationStage(deployProd);
