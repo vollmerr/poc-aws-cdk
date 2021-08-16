@@ -14,7 +14,7 @@ export class PocAwsCdkStack extends cdk.Stack {
     const cloudAssemblyArtifact = new codepipeline.Artifact();
 
     const pipeline = new pipelines.CdkPipeline(this, "Pipeline", {
-      cloudAssemblyArtifact: cloudAssemblyArtifact,
+      cloudAssemblyArtifact,
       selfMutating: true,
       sourceAction: new codepipelineActions.GitHubSourceAction({
         owner: "vollmerr",
@@ -25,8 +25,8 @@ export class PocAwsCdkStack extends cdk.Stack {
         oauthToken: cdk.SecretValue.secretsManager("github-token"),
       }),
       synthAction: new pipelines.SimpleSynthAction({
-        cloudAssemblyArtifact: cloudAssemblyArtifact,
-        sourceArtifact: sourceArtifact,
+        cloudAssemblyArtifact,
+        sourceArtifact,
         environment: {
           buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
           privileged: true,
@@ -37,8 +37,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       }),
     });
 
-    const deployStaging = new StaticSiteStage(this, "DeployStaging");
-
-    pipeline.addApplicationStage(deployStaging);
+    // const deployStaging = new StaticSiteStage(this, "DeployStaging");
+    // pipeline.addApplicationStage(deployStaging);
   }
 }
