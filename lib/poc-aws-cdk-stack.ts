@@ -32,7 +32,7 @@ export class PocAwsCdkStack extends cdk.Stack {
           privileged: true,
         },
         installCommands: ["npm install"],
-        buildCommands: ["npm run lint", "npm run test", "npm run build"],
+        buildCommands: ["npm run test", "npm run build"],
         synthCommand: "npx cdk synth",
       }),
     });
