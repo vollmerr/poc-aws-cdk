@@ -13,39 +13,45 @@ export class PocAwsCdkStack extends cdk.Stack {
     const sourceArtifact = new codepipeline.Artifact();
     const cloudAssemblyArtifact = new codepipeline.Artifact();
 
+    const sourceAction = new codepipelineActions.GitHubSourceAction({
+      owner: "vollmerr",
+      repo: "poc-aws-cdk",
+      branch: "main",
+      actionName: "Github",
+      output: sourceArtifact,
+      oauthToken: cdk.SecretValue.secretsManager("github-token"),
+    });
+
+    const synthAction = new pipelines.SimpleSynthAction({
+      cloudAssemblyArtifact,
+      sourceArtifact,
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
+        privileged: true,
+      },
+      installCommands: ["npm install"],
+      buildCommands: ["npm run test", "npm run build"],
+      synthCommand: "npx cdk synth",
+    });
+
     const pipeline = new pipelines.CdkPipeline(this, "Pipeline", {
       cloudAssemblyArtifact,
       selfMutating: true,
-      sourceAction: new codepipelineActions.GitHubSourceAction({
-        owner: "vollmerr",
-        repo: "poc-aws-cdk",
-        branch: "main",
-        actionName: "Github",
-        output: sourceArtifact,
-        oauthToken: cdk.SecretValue.secretsManager("github-token"),
-      }),
-      synthAction: new pipelines.SimpleSynthAction({
-        cloudAssemblyArtifact,
-        sourceArtifact,
-        environment: {
-          buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-          privileged: true,
-        },
-        installCommands: ["npm install"],
-        buildCommands: ["npm run test", "npm run build"],
-        synthCommand: "npx cdk synth",
-      }),
+      sourceAction,
+      synthAction,
     });
 
-    // const deployStaging = new StaticSiteStage(this, "DeployStaging", {
-    //   ...props,
-    //   domainName: "staging.vollmerr.com",
-    // });
-    // pipeline.addApplicationStage(deployStaging);
+    const deployStaging = new StaticSiteStage(this, "DeployStaging", {
+      ...props,
+      commitId: sourceAction.variables.commitId,
+      targetEnv: "staging",
+    });
+    pipeline.addApplicationStage(deployStaging);
 
     const deployProd = new StaticSiteStage(this, "DeployProd", {
       ...props,
-      domainName: "vollmerr.com",
+      commitId: sourceAction.variables.commitId,
+      targetEnv: "production",
     });
     pipeline.addApplicationStage(deployProd);
   }

@@ -9,7 +9,8 @@ import * as cloudwatch from "@aws-cdk/aws-cloudwatch";
 import * as acm from "@aws-cdk/aws-certificatemanager";
 
 export type StaticSiteConstructProps = {
-  domainName: string;
+  targetEnv: string;
+  commitId: string;
 };
 
 export class StaticSiteConstruct extends cdk.Construct {
@@ -17,8 +18,10 @@ export class StaticSiteConstruct extends cdk.Construct {
   constructor(parent: cdk.Stack, id: string, props: StaticSiteConstructProps) {
     super(parent, id);
 
-    const { domainName } = props;
-    const siteDomain = `www.${domainName}`;
+    const { targetEnv, commitId } = props;
+    const domainName = "vollmerr.com";
+    const subdomain = props.targetEnv === "production" ? "" : targetEnv;
+    const siteDomain = `www.${subdomain}${subdomain ? "." : ""}${domainName}`;
     const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
 
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(
@@ -33,7 +36,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     // Content bucket
     const siteBucket = new s3.Bucket(this, "SiteBucket", {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      bucketName: "poc-aws-cdk",
+      bucketName: `poc-aws-cdk/${subdomain}/${commitId}`,
       publicReadAccess: false,
       websiteIndexDocument: "index.html",
     });
