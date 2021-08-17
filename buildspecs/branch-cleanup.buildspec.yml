@@ -7,4 +7,4 @@ phases:
   build:
     commands:
       - echo "Removing from S3"
-      - aws s3 rm s3://11cms-staging/portal-system/$CODEBUILD_WEBHOOK_BASE_REF --recursive
+      - aws s3 rm s3://poc-aws-cdk/portal-system/$CODEBUILD_WEBHOOK_BASE_REF --recursive
