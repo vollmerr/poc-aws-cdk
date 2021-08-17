@@ -20,6 +20,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     const { subdomain } = props;
     const domainName = "vollmerr.com";
     const domainPrefix = subdomain ? `${subdomain}.` : "";
+    const domainPostfix = subdomain ? `.${subdomain}` : "";
     const siteDomain = `www.${domainPrefix}${domainName}`;
     const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
 
@@ -32,11 +33,10 @@ export class StaticSiteConstruct extends cdk.Construct {
     );
     new cdk.CfnOutput(this, "Site", { value: `https://${siteDomain}` });
 
-    const bucketPostfix = subdomain ? `-${subdomain}` : "";
     const siteBucket = s3.Bucket.fromBucketName(
       this,
       "SiteBucket",
-      `poc-aws-cdk${bucketPostfix}`
+      `poc-aws-cdk${domainPostfix}`
     );
 
     // // Content bucket - uncomment for initial deploy
@@ -47,6 +47,7 @@ export class StaticSiteConstruct extends cdk.Construct {
     //   websiteIndexDocument: "index.html",
     //   versioned: true,
     // });
+
     // Grant access to cloudfront
     siteBucket.addToResourcePolicy(
       new iam.PolicyStatement({

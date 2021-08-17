@@ -7,7 +7,7 @@ import * as pipelines from "@aws-cdk/pipelines";
 import { StaticSiteStage } from "./static-site-stage";
 
 export class PocAwsCdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
     const sourceArtifact = new codepipeline.Artifact();
@@ -43,7 +43,7 @@ export class PocAwsCdkStack extends cdk.Stack {
 
     const deployStaging = new StaticSiteStage(this, "DeployStaging", {
       ...props,
-      subDomain: "staging",
+      subdomain: "staging",
     });
     pipeline.addApplicationStage(deployStaging);
 
