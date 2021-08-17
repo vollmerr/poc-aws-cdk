@@ -2,9 +2,9 @@ version: 0.2
 
 env:
   shell: bash
-  secrets-manager:
-    GITHUB_PASSWORD: GITHUB_PACKAGES:PASSWORD
-    GITHUB_ACCOUNT: GITHUB_PACKAGES:ACCOUNT
+  # secrets-manager:
+  #   GITHUB_PASSWORD: GITHUB_PACKAGES:PASSWORD
+  #   GITHUB_ACCOUNT: GITHUB_PACKAGES:ACCOUNT
 
 phases:
   install:
@@ -12,10 +12,10 @@ phases:
       nodejs: 14
   build:
     commands:
-      - echo "Setting npm config"
-      - npm config set @eleven-software:registry https://npm.pkg.github.com
-      - npm config set //npm.pkg.github.com/:_authToken $GITHUB_PASSWORD
-      - npm config set always-auth=true
+      # - echo "Setting npm config"
+      # - npm config set @eleven-software:registry https://npm.pkg.github.com
+      # - npm config set //npm.pkg.github.com/:_authToken $GITHUB_PASSWORD
+      # - npm config set always-auth=true
 
       - echo "Installing dependencies"
       - npm ci
