@@ -9,7 +9,7 @@ import * as cloudwatch from "@aws-cdk/aws-cloudwatch";
 import * as acm from "@aws-cdk/aws-certificatemanager";
 
 export type StaticSiteConstructProps = {
-  targetEnv: string;
+  subdomain?: string;
 };
 
 export class StaticSiteConstruct extends cdk.Construct {
@@ -17,10 +17,10 @@ export class StaticSiteConstruct extends cdk.Construct {
   constructor(parent: cdk.Stack, id: string, props: StaticSiteConstructProps) {
     super(parent, id);
 
-    const { targetEnv } = props;
+    const { subdomain } = props;
     const domainName = "vollmerr.com";
-    const subdomain = props.targetEnv === "production" ? "" : `${targetEnv}.`;
-    const siteDomain = `www.${subdomain}${domainName}`;
+    const domainPrefix = subdomain ? `${subdomain}.` : "";
+    const siteDomain = `www.${domainPrefix}${domainName}`;
     const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
 
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(
@@ -32,10 +32,11 @@ export class StaticSiteConstruct extends cdk.Construct {
     );
     new cdk.CfnOutput(this, "Site", { value: `https://${siteDomain}` });
 
+    const bucketPostfix = subdomain ? `-${subdomain}` : "";
     const siteBucket = s3.Bucket.fromBucketName(
       this,
       "SiteBucket",
-      `poc-aws-cdk-${targetEnv}`
+      `poc-aws-cdk${bucketPostfix}`
     );
 
     // // Content bucket - uncomment for initial deploy
@@ -58,7 +59,7 @@ export class StaticSiteConstruct extends cdk.Construct {
         resources: [siteBucket.arnForObjects("*")],
       })
     );
-    // new cdk.CfnOutput(this, "Bucket", { value: siteBucket.bucketName });
+    new cdk.CfnOutput(this, "Bucket", { value: siteBucket.bucketName });
 
     // TLS certificate
     const { certificateArn } = new acm.DnsValidatedCertificate(
