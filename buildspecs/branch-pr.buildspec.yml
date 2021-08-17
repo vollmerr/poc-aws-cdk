@@ -33,7 +33,7 @@ phases:
 
       - echo "Copying build to S3"
       # HEAD_REF is refs/heads/BRANCH_NAME
-      - BRANCH_NAME=$CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 2
+      - BRANCH_NAME=echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3
       - aws s3 cp build s3://poc-aws-cdk/portal-system/$BRANCH_NAME --recursive
 
       # - echo "Invalidating couldfront"
