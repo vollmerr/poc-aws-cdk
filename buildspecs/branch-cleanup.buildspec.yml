@@ -1,0 +1,10 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  build:
+    commands:
+      - echo "Removing from S3"
+      - aws s3 rm s3://11cms-staging/portal-system/$CODEBUILD_WEBHOOK_BASE_REF --recursive

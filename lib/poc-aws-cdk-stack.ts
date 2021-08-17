@@ -6,6 +6,12 @@ import * as pipelines from "@aws-cdk/pipelines";
 
 import { StaticSiteStage } from "./static-site-stage";
 
+const domain = "guestinternet.com";
+const bucket = "11cms-staging";
+const url = "https://11cms-staging.guestinternet.com/";
+const final = "https://11cms-staging.guestinternet.com/portal-system/main/...";
+const branch = "https://11cms-staging.guestinternet.com/portal-system/vollmerr-test-stuff/...";
+
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
@@ -51,3 +57,12 @@ export class PocAwsCdkStack extends cdk.Stack {
     pipeline.addApplicationStage(deployProd);
   }
 }
+
+// merge to main
+//    deploy to staging/portal-system/main
+
+// create/update branch
+//    deploy to staging/portal-system/branch-name
+
+// delete branch
+//    delete staging/portal-system/branch-name
