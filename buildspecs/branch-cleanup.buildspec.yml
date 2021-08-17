@@ -7,4 +7,6 @@ phases:
   build:
     commands:
       - echo "Removing from S3"
-      - aws s3 rm s3://poc-aws-cdk/portal-system/$CODEBUILD_WEBHOOK_BASE_REF --recursive
+      # HEAD_REF is refs/heads/BRANCH_NAME
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3)
+      - aws s3 rm s3://poc-aws-cdk/portal-system/$BRANCH_NAME --recursive
