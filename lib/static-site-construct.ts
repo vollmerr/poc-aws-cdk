@@ -63,40 +63,40 @@ export class StaticSiteConstruct extends cdk.Construct {
     );
     new cdk.CfnOutput(this, "Bucket", { value: siteBucket.bucketName });
 
-    // // TLS certificate
-    // const { certificateArn } = new acm.DnsValidatedCertificate(
-    //   this,
-    //   "SiteCertificate",
-    //   {
-    //     domainName: siteDomain,
-    //     hostedZone: zone,
-    //     region: "us-east-1", // Cloudfront only checks this region for certificates.
-    //   }
-    // );
-    // new cdk.CfnOutput(this, "Certificate", { value: certificateArn });
+    // TLS certificate
+    const { certificateArn } = new acm.DnsValidatedCertificate(
+      this,
+      "SiteCertificate",
+      {
+        domainName: siteDomain,
+        hostedZone: zone,
+        region: "us-east-1", // Cloudfront only checks this region for certificates.
+      }
+    );
+    new cdk.CfnOutput(this, "Certificate", { value: certificateArn });
 
-    // // Specifies you want viewers to use HTTPS & TLS v1.1 to request your objects
-    // const viewerCertificate = cloudfront.ViewerCertificate.fromAcmCertificate(
-    //   {
-    //     certificateArn,
-    //     env: {
-    //       account: cdk.Aws.ACCOUNT_ID,
-    //       region: cdk.Aws.REGION,
-    //     },
-    //     metricDaysToExpiry: () =>
-    //       new cloudwatch.Metric({
-    //         metricName: "TLS Viewer Certificate Expired",
-    //         namespace: "TLS Viewer Certificate Validity",
-    //       }),
-    //     node: this.node,
-    //     stack: parent,
-    //   },
-    //   {
-    //     aliases: [siteDomain],
-    //     securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016,
-    //     sslMethod: cloudfront.SSLMethod.SNI,
-    //   }
-    // );
+    // Specifies you want viewers to use HTTPS & TLS v1.1 to request your objects
+    const viewerCertificate = cloudfront.ViewerCertificate.fromAcmCertificate(
+      {
+        certificateArn,
+        env: {
+          account: cdk.Aws.ACCOUNT_ID,
+          region: cdk.Aws.REGION,
+        },
+        metricDaysToExpiry: () =>
+          new cloudwatch.Metric({
+            metricName: "TLS Viewer Certificate Expired",
+            namespace: "TLS Viewer Certificate Validity",
+          }),
+        node: this.node,
+        stack: parent,
+      },
+      {
+        aliases: [siteDomain],
+        securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016,
+        sslMethod: cloudfront.SSLMethod.SNI,
+      }
+    );
 
     // CloudFront distribution
     const distribution = new cloudfront.CloudFrontWebDistribution(
@@ -119,27 +119,26 @@ export class StaticSiteConstruct extends cdk.Construct {
             },
           },
         ],
-        // viewerCertificate,
+        viewerCertificate,
       }
     );
-    // new cdk.CfnOutput(this, "DistributionId", {
-    //   value: distribution.distributionId,
-    // });
+    new cdk.CfnOutput(this, "DistributionId", {
+      value: distribution.distributionId,
+    });
 
-    // // Route53 alias record for the CloudFront distribution
-    // new route53.ARecord(this, "SiteAliasRecord", {
-    //   recordName: siteDomain,
-    //   target: route53.RecordTarget.fromAlias(
-    //     new targets.CloudFrontTarget(distribution)
-    //   ),
-    //   zone,
-    // });
+    // Route53 alias record for the CloudFront distribution
+    new route53.ARecord(this, "SiteAliasRecord", {
+      recordName: siteDomain,
+      target: route53.RecordTarget.fromAlias(
+        new targets.CloudFrontTarget(distribution)
+      ),
+      zone,
+    });
 
     // Deploy site contents to S3 bucket
     new s3deploy.BucketDeployment(this, "DeployWithInvalidation", {
       destinationBucket: siteBucket,
       distribution,
-      destinationKeyPrefix: 'portal-system',
       distributionPaths: ["/*"],
       sources: [s3deploy.Source.asset("./build")],
     });
