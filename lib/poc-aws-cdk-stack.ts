@@ -47,9 +47,9 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
     pipeline.addApplicationStage(deployStaging);
 
-    const deployProd = new StaticSiteStage(this, "DeployProd", {
+    const deployProd = new StaticSiteStage(this, "Deploy", {
       ...props,
-      targetEnv: "production",
+      targetEnv: "prod",
     });
     pipeline.addApplicationStage(deployProd);
   }
