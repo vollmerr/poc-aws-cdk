@@ -33,20 +33,21 @@ export class StaticSiteConstruct extends cdk.Construct {
     );
     new cdk.CfnOutput(this, "Site", { value: `https://${siteDomain}` });
 
-    const siteBucket = s3.Bucket.fromBucketName(
-      this,
-      "SiteBucket",
-      `poc-aws-cdk${domainPostfix}`
-    );
+    // const siteBucket = s3.Bucket.fromBucketName(
+    //   this,
+    //   "SiteBucket",
+    //   `poc-aws-cdk${domainPostfix}`
+    // );
 
-    // // Content bucket - uncomment for initial deploy
-    // const siteBucket = new s3.Bucket(this, "SiteBucket", {
-    //   blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-    //   bucketName: `poc-aws-cdk`,
-    //   publicReadAccess: false,
-    //   websiteIndexDocument: "index.html",
-    //   versioned: true,
-    // });
+    // Content bucket - uncomment for initial deploy
+    const siteBucket = new s3.Bucket(this, "SiteBucket", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      bucketName: `poc-aws-cdk${domainPostfix}`,
+      publicReadAccess: false,
+      websiteIndexDocument: "index.html",
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
 
     // Grant access to cloudfront
     siteBucket.addToResourcePolicy(
