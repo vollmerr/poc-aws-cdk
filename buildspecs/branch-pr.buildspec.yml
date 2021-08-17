@@ -32,8 +32,8 @@ phases:
       - npm run build
 
       - echo "Copying build to S3"
-      # BASE_REF is refs/heads/BRANCH_NAME
-      - BRANCH_NAME=$CODEBUILD_WEBHOOK_BASE_REF | cut -d "/" -f 3
+      # HEAD_REF is refs/heads/BRANCH_NAME
+      - BRANCH_NAME=$CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 2
       - aws s3 cp build s3://poc-aws-cdk/portal-system/$BRANCH_NAME --recursive
 
       # - echo "Invalidating couldfront"
