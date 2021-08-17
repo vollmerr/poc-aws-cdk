@@ -2,9 +2,9 @@ version: 0.2
 
 env:
   shell: bash
-  secrets-manager:
-    GITHUB_PASSWORD: GITHUB_PACKAGES:PASSWORD
-    GITHUB_ACCOUNT: GITHUB_PACKAGES:ACCOUNT
+  # secrets-manager:
+  #   GITHUB_PASSWORD: GITHUB_PACKAGES:PASSWORD
+  #   GITHUB_ACCOUNT: GITHUB_PACKAGES:ACCOUNT
 
 phases:
   install:
@@ -12,10 +12,10 @@ phases:
       nodejs: 14
   build:
     commands:
-      - echo "Setting npm config"
-      - npm config set @eleven-software:registry https://npm.pkg.github.com
-      - npm config set //npm.pkg.github.com/:_authToken $GITHUB_PASSWORD
-      - npm config set always-auth=true
+      # - echo "Setting npm config"
+      # - npm config set @eleven-software:registry https://npm.pkg.github.com
+      # - npm config set //npm.pkg.github.com/:_authToken $GITHUB_PASSWORD
+      # - npm config set always-auth=true
 
       - echo "Installing dependencies"
       - npm ci
@@ -32,10 +32,12 @@ phases:
       - npm run build
 
       - echo "Copying build to S3"
-      - aws s3 cp build s3://poc-aws-cdk/portal-system/$CODEBUILD_WEBHOOK_BASE_REF --recursive
+      # HEAD_REF is refs/heads/BRANCH_NAME
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3)
+      - aws s3 cp build s3://poc-aws-cdk/portal-system/$BRANCH_NAME --recursive
 
-      - echo "Invalidating couldfront"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
+      # - echo "Invalidating couldfront"
+      # - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
 
 artifacts:
   base-directory: ./build
