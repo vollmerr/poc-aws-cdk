@@ -37,126 +37,12 @@ const config = {
   },
 };
 
-/**
- * Targets following existing resources:
- * - github repo (config.github.*)
- * - s3 bucket (config.s3.bucketName) -> requires public access
- * - cloudfront distribution (config.cloudfront.distributionId)
- */
 export class PocAwsCdkStack extends cdk.Stack {
-  // private distributionId: string;
-
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    // this.initializeResources(id);
     this.onPullRequest();
     this.onPullRequestMerged();
-  }
-
-  // initializes a s3 bucket (existing one) with cloudfront access
-  private initializeResources(id: string) {
-    // const subdomainName = config.route53.subdomain
-    //   ? `${config.route53.subdomain}.`
-    //   : "";
-    // const domainName = `www.${subdomainName}${config.route53.domain}`;
-    // const zone = route53.HostedZone.fromLookup(this, "Zone", {
-    //   domainName: config.route53.domain,
-    // });
-
-    // const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OAI", {
-    //   comment: `OAI for ${id}`,
-    // });
-
-    // const bucket = s3.Bucket.fromBucketName(
-    //   this,
-    //   "SiteBucket",
-    //   config.s3.bucketName
-    // );
-
-    // const bucketPolicy = new iam.PolicyStatement({
-    //   actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
-    //   // principals: [
-    //   //   new iam.CanonicalUserPrincipal(
-    //   //     cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
-    //   //   ),
-    //   // ],
-    //   principals: [new iam.AnyPrincipal()],
-
-    //   resources: [bucket.arnForObjects("*")],
-    // });
-
-    // bucket.addToResourcePolicy(bucketPolicy);
-
-    // // TLS certificate
-    // const { certificateArn } = new acm.DnsValidatedCertificate(
-    //   this,
-    //   "SiteCertificate",
-    //   {
-    //     domainName,
-    //     hostedZone: zone,
-    //     region: "us-east-1", // Cloudfront only checks this region for certificates.
-    //   }
-    // );
-
-    // // Specifies you want viewers to use HTTPS & TLS v1.1 to request your objects
-    // const viewerCertificate = cloudfront.ViewerCertificate.fromAcmCertificate(
-    //   {
-    //     certificateArn,
-    //     env: {
-    //       account: cdk.Aws.ACCOUNT_ID,
-    //       region: cdk.Aws.REGION,
-    //     },
-    //     metricDaysToExpiry: () =>
-    //       new cloudwatch.Metric({
-    //         metricName: "TLS Viewer Certificate Expired",
-    //         namespace: "TLS Viewer Certificate Validity",
-    //       }),
-    //     node: this.node,
-    //     stack: this,
-    //   },
-    //   {
-    //     aliases: [domainName],
-    //     securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016,
-    //     sslMethod: cloudfront.SSLMethod.SNI,
-    //   }
-    // );
-
-    // // CloudFront distribution
-    // const distribution = new cloudfront.CloudFrontWebDistribution(
-    //   this,
-    //   "SiteDistribution",
-    //   {
-    //     originConfigs: [
-    //       {
-    //         behaviors: [
-    //           {
-    //             allowedMethods:
-    //               cloudfront.CloudFrontAllowedMethods.GET_HEAD_OPTIONS,
-    //             compress: true,
-    //             isDefaultBehavior: true,
-    //           },
-    //         ],
-    //         s3OriginSource: {
-    //           originAccessIdentity: cloudfrontOAI,
-    //           s3BucketSource: bucket,
-    //         },
-    //       },
-    //     ],
-    //     viewerCertificate,
-    //   }
-    // );
-
-    // // Route53 alias record for the CloudFront distribution
-    // new route53.ARecord(this, "SiteAliasRecord", {
-    //   recordName: domainName,
-    //   target: route53.RecordTarget.fromAlias(
-    //     new targets.CloudFrontTarget(distribution)
-    //   ),
-    //   zone,
-    // });
-
-    // this.distributionId = distribution.distributionId;
   }
 
   // base policy for running codebuild
