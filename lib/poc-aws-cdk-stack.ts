@@ -104,7 +104,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         privileged: true,
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/branch-pr.yml"
+        "./buildspecs/branch-pr.buildspec.yml"
       ),
     });
 
@@ -144,7 +144,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         privileged: true,
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/branch-cleanup.yml"
+        "./buildspecs/branch-cleanup.buildspec.yml"
       ),
     });
 
