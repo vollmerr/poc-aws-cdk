@@ -21,57 +21,24 @@ const config = {
     owner: "vollmerr",
     repo: "poc-aws-cdk",
   },
+  s3: {
+    bucketName: "11os-staging",
+  },
 };
 
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    // const sourceArtifact = new codepipeline.Artifact();
-    // const cloudAssemblyArtifact = new codepipeline.Artifact();
-
-    // const sourceAction = new codepipelineActions.GitHubSourceAction({
-    //   owner: "vollmerr",
-    //   repo: "poc-aws-cdk",
-    //   branch: "main",
-    //   actionName: "Github",
-    //   output: sourceArtifact,
-    //   oauthToken: cdk.SecretValue.secretsManager("github-token"),
-    // });
-
-    // const synthAction = new pipelines.SimpleSynthAction({
-    //   cloudAssemblyArtifact,
-    //   sourceArtifact,
-    //   environment: {
-    //     buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-    //     privileged: true,
-    //   },
-    //   installCommands: ["npm install"],
-    //   buildCommands: ["npm run test", "npm run build"],
-    //   synthCommand: "npx cdk synth",
-    // });
-
-    // const pipeline = new pipelines.CdkPipeline(this, "Pipeline", {
-    //   cloudAssemblyArtifact,
-    //   selfMutating: true,
-    //   sourceAction,
-    //   synthAction,
-    // });
-
-    // const deployStaging = new StaticSiteStage(this, "DeployStaging", {
-    //   ...props,
-    //   subdomain: "staging",
-    // });
-    // pipeline.addApplicationStage(deployStaging);
-
-    // const deployProd = new StaticSiteStage(this, "Deploy", props);
-    // pipeline.addApplicationStage(deployProd);
-
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OAI", {
       comment: `OAI for ${id}`,
     });
 
-    const bucket = s3.Bucket.fromBucketName(this, "SiteBucket", "11os-staging");
+    const bucket = s3.Bucket.fromBucketName(
+      this,
+      "SiteBucket",
+      config.s3.bucketName
+    );
     const bucketPolicy = new iam.PolicyStatement({
       actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
       principals: [
@@ -104,7 +71,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         privileged: true,
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/branch-pr.buildspec.yml"
+        "./buildspecs/pull-request.yml"
       ),
     });
 
@@ -144,7 +111,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         privileged: true,
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/branch-cleanup.buildspec.yml"
+        "./buildspecs/pull-request-merged.yml"
       ),
     });
 
