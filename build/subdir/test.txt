@@ -1,2 +1,2 @@
 test!
-href="https://staging.vollmerr.com/fix/renaming/favicon.ico"
+href="https://staging.vollmerr.com/fix/renaming-2/favicon.ico"
