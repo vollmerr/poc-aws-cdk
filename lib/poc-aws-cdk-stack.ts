@@ -8,7 +8,7 @@ const config = {
     repo: "poc-aws-cdk",
   },
   s3: {
-    bucketName: "11cms-staging",
+    bucketName: "poc-aws-cdk",
   },
   cloudfront: {
     distributionId: "E1QGVGRXYXX8JZ",
