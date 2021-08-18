@@ -64,7 +64,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const prProject = new codebuild.Project(this, "portal-system-pr", {
+    const prProject = new codebuild.Project(this, "portalSystemPr", {
       source: prSource,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
@@ -81,6 +81,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         "secretsmanager:GetSecretValue",
         "s3:GetBucket*",
         "s3:GetObject*",
+        "s3:DeleteObject*",
         "s3:List*",
         "s3:Put*",
       ],
@@ -104,7 +105,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const mergeProject = new codebuild.Project(this, "portal-system-pr-merge", {
+    const mergeProject = new codebuild.Project(this, "portalSystemPrMerged", {
       source: mergeSource,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
