@@ -1,1 +1,2 @@
 test!
+href="https://staging.vollmerr.com/fix/renaming/favicon.ico"
