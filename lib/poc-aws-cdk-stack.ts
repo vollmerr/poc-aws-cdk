@@ -1,24 +1,6 @@
 import * as cdk from "@aws-cdk/core";
 import * as codebuild from "@aws-cdk/aws-codebuild";
 import * as iam from "@aws-cdk/aws-iam";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as targets from "@aws-cdk/aws-route53-targets";
-import * as s3 from "@aws-cdk/aws-s3";
-import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as acm from "@aws-cdk/aws-certificatemanager";
-import * as cloudwatch from "@aws-cdk/aws-cloudwatch";
-import * as codepipeline from "@aws-cdk/aws-codepipeline";
-import * as codepipelineActions from "@aws-cdk/aws-codepipeline-actions";
-import * as pipelines from "@aws-cdk/pipelines";
-
-import { StaticSiteStage } from "./static-site-stage";
-
-// const domain = "guestinternet.com";
-// const bucket = "11cms-staging";
-// const url = "https://11cms-staging.guestinternet.com/";
-// const final = "https://11cms-staging.guestinternet.com/portal-system/main/...";
-// const branch =
-//   "https://11cms-staging.guestinternet.com/portal-system/vollmerr-test-stuff/...";
 
 const config = {
   github: {
@@ -26,14 +8,10 @@ const config = {
     repo: "poc-aws-cdk",
   },
   s3: {
-    bucketName: "11os-staging",
+    bucketName: "11cms-staging",
   },
   cloudfront: {
     distributionId: "E1QGVGRXYXX8JZ",
-  },
-  route53: {
-    subdomain: "staging",
-    domain: "vollmerr.com",
   },
 };
 
@@ -88,6 +66,8 @@ export class PocAwsCdkStack extends cdk.Stack {
         privileged: true,
         environmentVariables: {
           CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+          GITHUB_REPO: { value: config.github.repo },
+          S3_BUCKET: { value: config.s3.bucketName },
         },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
@@ -122,6 +102,8 @@ export class PocAwsCdkStack extends cdk.Stack {
           privileged: true,
           environmentVariables: {
             CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+            GITHUB_REPO: { value: config.github.repo },
+            S3_BUCKET: { value: config.s3.bucketName },
           },
         },
         buildSpec: codebuild.BuildSpec.fromSourceFilename(
