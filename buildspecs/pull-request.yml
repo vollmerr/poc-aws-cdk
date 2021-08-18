@@ -30,7 +30,7 @@ phases:
       - npm run build
 
       # refs/heads/BRANCH_NAME -> BRANCH_NAME
-      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/head\///')
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
       - echo "Copying build to S3 ($BRANCH_NAME)"
       - aws s3 sync build s3://poc-aws-cdk/portal-system/$BRANCH_NAME
 
