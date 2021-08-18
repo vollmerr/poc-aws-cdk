@@ -24,12 +24,22 @@ const config = {
   s3: {
     bucketName: "11os-staging",
   },
+  cloudfront: {
+    distributionId: "E1QGVGRXYXX8JZ",
+  },
 };
 
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
+    this.initializeBucket(id);
+    this.onPullRequest();
+    this.onPullRequestMerged();
+  }
+
+  // initializes a s3 bucket (existing one) with cloudfront access
+  private initializeBucket(id: string) {
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OAI", {
       comment: `OAI for ${id}`,
     });
@@ -39,6 +49,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       "SiteBucket",
       config.s3.bucketName
     );
+
     const bucketPolicy = new iam.PolicyStatement({
       actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
       principals: [
@@ -48,10 +59,34 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
       resources: [bucket.arnForObjects("*")],
     });
-    bucket.addToResourcePolicy(bucketPolicy);
 
-    // on pull request
-    const prSource = codebuild.Source.gitHub({
+    bucket.addToResourcePolicy(bucketPolicy);
+  }
+
+  // base policy for running codebuild
+  private getCodeBuildBasePolicy() {
+    return new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "cloudfront:CreateInvalidation",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:Put*",
+        "secretsmanager:GetSecretValue",
+      ],
+      resources: [
+        `arn:aws:cloudfront::${this.account}:*`,
+        "arn:aws:s3:::*",
+        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
+      ],
+    });
+  }
+
+  // actions to take on pull request
+  private onPullRequest() {
+    const source = codebuild.Source.gitHub({
       owner: config.github.owner,
       repo: config.github.repo,
       reportBuildStatus: true,
@@ -64,37 +99,27 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const prProject = new codebuild.Project(this, "portalSystemPr", {
-      source: prSource,
+    const project = new codebuild.Project(this, "portalSystemPullRequest", {
+      source,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
         privileged: true,
+        environmentVariables: {
+          CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+        },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         "./buildspecs/pull-request.yml"
       ),
     });
 
-    const codeBuildPolicy = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "secretsmanager:GetSecretValue",
-        "s3:GetBucket*",
-        "s3:GetObject*",
-        "s3:DeleteObject*",
-        "s3:List*",
-        "s3:Put*",
-      ],
-      resources: [
-        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
-        "arn:aws:s3:::*",
-      ],
-    });
+    const codeBuildPolicy = this.getCodeBuildBasePolicy();
+    project.addToRolePolicy(codeBuildPolicy);
+  }
 
-    prProject.addToRolePolicy(codeBuildPolicy);
-
-    // on merge pull request
-    const mergeSource = codebuild.Source.gitHub({
+  // actions to take on pull request merged
+  private onPullRequestMerged() {
+    const source = codebuild.Source.gitHub({
       owner: config.github.owner,
       repo: config.github.repo,
       reportBuildStatus: false,
@@ -105,26 +130,21 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const mergeProject = new codebuild.Project(this, "portalSystemPrMerged", {
-      source: mergeSource,
+    const project = new codebuild.Project(this, "portalSystemPullRequestMerged", {
+      source,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
         privileged: true,
+        environmentVariables: {
+          CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+        },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         "./buildspecs/pull-request-merged.yml"
       ),
     });
 
-    mergeProject.addToRolePolicy(codeBuildPolicy);
+    const codeBuildPolicy = this.getCodeBuildBasePolicy();
+    project.addToRolePolicy(codeBuildPolicy);
   }
 }
-
-// merge to main
-//    deploy to staging/portal-system/main
-
-// create/update branch
-//    deploy to staging/portal-system/branch-name
-
-// delete branch
-//    delete staging/portal-system/branch-name

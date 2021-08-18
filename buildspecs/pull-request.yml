@@ -26,18 +26,16 @@ phases:
       - echo "Running tests"
       - npm run test
 
-      - touch .env.production && echo REACT_APP_APPLICATION_VERSION=$CODEBUILD_RESOLVED_SOURCE_VERSION >> .env.production
-
       - echo "Building the project"
       - npm run build
 
-      - echo "Copying build to S3"
-      # HEAD_REF is refs/heads/BRANCH_NAME
-      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3)
+      # refs/heads/BRANCH_NAME -> BRANCH_NAME
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
+      - echo "Copying build to S3 ($BRANCH_NAME)"
       - aws s3 sync build s3://poc-aws-cdk/portal-system/$BRANCH_NAME
 
-      # - echo "Invalidating couldfront"
-      # - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
+      - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/portal-system/*'
 
 artifacts:
   base-directory: ./build
