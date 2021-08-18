@@ -2,22 +2,18 @@ import * as cdk from "@aws-cdk/core";
 import * as codebuild from "@aws-cdk/aws-codebuild";
 import * as iam from "@aws-cdk/aws-iam";
 
-const config = {
-  github: {
-    owner: "vollmerr",
-    repo: "poc-aws-cdk",
-  },
-  s3: {
-    bucketName: "poc-aws-cdk",
-  },
-  cloudfront: {
-    distributionId: "E1QGVGRXYXX8JZ",
-  },
-};
+const CLOUDFRONT_DISTRO_ID = "E1QGVGRXYXX8JZ";
+const GITHUB_REPO = "poc-aws-cdk";
+const GITHUB_OWNER = "vollmerr";
+const S3_BUCKET = "poc-aws-cdk";
+const DOMAIN = "staging.vollmerr.com";
+
+const getBuildSpec = (name: string) => `./infra/buildspecs/${name}`;
 
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
+
     this.onPullRequest();
     this.onPullRequestMerged();
   }
@@ -25,7 +21,6 @@ export class PocAwsCdkStack extends cdk.Stack {
   // base policy for running codebuild
   private getCodeBuildBasePolicy() {
     return new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
       actions: [
         "cloudfront:CreateInvalidation",
         "s3:DeleteObject*",
@@ -35,6 +30,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         "s3:Put*",
         "secretsmanager:GetSecretValue",
       ],
+      effect: iam.Effect.ALLOW,
       resources: [
         `arn:aws:cloudfront::${this.account}:*`,
         "arn:aws:s3:::*",
@@ -46,8 +42,8 @@ export class PocAwsCdkStack extends cdk.Stack {
   // actions to take on pull request
   private onPullRequest() {
     const source = codebuild.Source.gitHub({
-      owner: config.github.owner,
-      repo: config.github.repo,
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
       reportBuildStatus: true,
       webhookFilters: [
         codebuild.FilterGroup.inEventOf(
@@ -59,19 +55,20 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
 
     const project = new codebuild.Project(this, "portalSystemPullRequest", {
-      source,
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(
+        getBuildSpec("pull-request.yml")
+      ),
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-        privileged: true,
         environmentVariables: {
-          CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
-          GITHUB_REPO: { value: config.github.repo },
-          S3_BUCKET: { value: config.s3.bucketName },
+          CLOUDFRONT_DISTRO_ID: { value: CLOUDFRONT_DISTRO_ID },
+          DOMAIN: { value: DOMAIN },
+          GITHUB_REPO: { value: GITHUB_REPO },
+          S3_BUCKET: { value: S3_BUCKET },
         },
+        privileged: true,
       },
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/pull-request.yml"
-      ),
+      source,
     });
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
@@ -81,8 +78,8 @@ export class PocAwsCdkStack extends cdk.Stack {
   // actions to take on pull request merged
   private onPullRequestMerged() {
     const source = codebuild.Source.gitHub({
-      owner: config.github.owner,
-      repo: config.github.repo,
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
       reportBuildStatus: false,
       webhookFilters: [
         codebuild.FilterGroup.inEventOf(
@@ -95,19 +92,20 @@ export class PocAwsCdkStack extends cdk.Stack {
       this,
       "portalSystemPullRequestMerged",
       {
-        source,
+        buildSpec: codebuild.BuildSpec.fromSourceFilename(
+          getBuildSpec("pull-request-merged.yml")
+        ),
         environment: {
           buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-          privileged: true,
           environmentVariables: {
-            CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
-            GITHUB_REPO: { value: config.github.repo },
-            S3_BUCKET: { value: config.s3.bucketName },
+            CLOUDFRONT_DISTRO_ID: { value: CLOUDFRONT_DISTRO_ID },
+            DOMAIN: { value: DOMAIN },
+            GITHUB_REPO: { value: GITHUB_REPO },
+            S3_BUCKET: { value: S3_BUCKET },
           },
+          privileged: true,
         },
-        buildSpec: codebuild.BuildSpec.fromSourceFilename(
-          "./buildspecs/pull-request-merged.yml"
-        ),
+        source,
       }
     );
 
