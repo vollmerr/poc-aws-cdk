@@ -65,12 +65,13 @@ export class PocAwsCdkStack extends cdk.Stack {
     return new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
-        "secretsmanager:GetSecretValue",
+        "cloudfront:CreateInvalidation",
+        "s3:DeleteObject*",
         "s3:GetBucket*",
         "s3:GetObject*",
-        "s3:DeleteObject*",
         "s3:List*",
         "s3:Put*",
+        "secretsmanager:GetSecretValue",
       ],
       resources: [
         "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
