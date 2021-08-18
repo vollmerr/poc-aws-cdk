@@ -10,8 +10,8 @@ phases:
       - BASE_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_BASE_REF | sed 's/refs\/heads\///')
       - HEAD_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
 
-      - echo "Promoting HEAD to BASE in S3 ($HEAD_BRANCH_NAME -> $BASE_BRANCH_NAME)";
-      - aws s3 sync s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME s3://poc-aws-cdk/portal-system/$BASE_BRANCH_NAME;
+      - echo "Promoting HEAD to BASE in S3 ($HEAD_BRANCH_NAME -> $BASE_BRANCH_NAME)"
+      - aws s3 sync s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME s3://poc-aws-cdk/portal-system/$BASE_BRANCH_NAME  --acl public-read
 
       - echo "Removing HEAD from S3 ($HEAD_BRANCH_NAME)"
       - aws s3 rm s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME --recursive

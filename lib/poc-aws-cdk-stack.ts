@@ -49,7 +49,7 @@ export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    this.initializeResources(id);
+    // this.initializeResources(id);
     this.onPullRequest();
     this.onPullRequestMerged();
   }
@@ -68,12 +68,11 @@ export class PocAwsCdkStack extends cdk.Stack {
     //   comment: `OAI for ${id}`,
     // });
 
-    const bucket = s3.Bucket.fromBucketName(
-      this,
-      "SiteBucket",
-      config.s3.bucketName
-    );
-    bucket.grantPublicAccess();
+    // const bucket = s3.Bucket.fromBucketName(
+    //   this,
+    //   "SiteBucket",
+    //   config.s3.bucketName
+    // );
 
     // const bucketPolicy = new iam.PolicyStatement({
     //   actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
