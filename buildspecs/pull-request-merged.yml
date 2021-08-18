@@ -6,9 +6,9 @@ env:
 phases:
   build:
     commands:
-      # REFs are refs/heads/BRANCH_NAME
-      - BASE_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_BASE_REF | cut -d "/" -f 3)
-      - HEAD_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3)
+      # refs/heads/BRANCH_NAME -> BRANCH_NAME
+      - BASE_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_BASE_REF | sed 's/refs\/head\///')
+      - HEAD_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/head\///')
 
       - echo "Promoting HEAD to BASE in S3 ($HEAD_BRANCH_NAME -> $BASE_BRANCH_NAME)";
       - aws s3 sync s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME s3://poc-aws-cdk/portal-system/$BASE_BRANCH_NAME;
@@ -17,4 +17,4 @@ phases:
       - aws s3 rm s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME --recursive
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/portal-system/*"

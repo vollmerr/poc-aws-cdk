@@ -77,7 +77,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         "secretsmanager:GetSecretValue",
       ],
       resources: [
-        "arn:aws:cloudfront:::*",
+        `arn:aws:cloudfront::${this.account}:*`,
         "arn:aws:s3:::*",
         "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
       ],
@@ -99,7 +99,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const project = new codebuild.Project(this, "portalSystemPr", {
+    const project = new codebuild.Project(this, "portalSystemPullRequest", {
       source,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
@@ -130,7 +130,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const project = new codebuild.Project(this, "portalSystemPrMerged", {
+    const project = new codebuild.Project(this, "portalSystemPullRequestMerged", {
       source,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
