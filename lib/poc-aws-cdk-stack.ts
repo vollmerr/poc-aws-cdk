@@ -74,8 +74,9 @@ export class PocAwsCdkStack extends cdk.Stack {
         "secretsmanager:GetSecretValue",
       ],
       resources: [
-        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
+        "arn:aws:cloudfront:::*",
         "arn:aws:s3:::*",
+        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*"
       ],
     });
   }
