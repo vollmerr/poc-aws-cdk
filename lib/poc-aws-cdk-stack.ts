@@ -8,7 +8,7 @@ const config = {
     repo: "poc-aws-cdk",
   },
   s3: {
-    bucketName: "11cms-staging",
+    bucketName: "poc-aws-cdk",
   },
   cloudfront: {
     distributionId: "E1QGVGRXYXX8JZ",
@@ -18,7 +18,6 @@ const config = {
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
-
     this.onPullRequest();
     this.onPullRequestMerged();
   }
