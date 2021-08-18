@@ -73,18 +73,21 @@ export class PocAwsCdkStack extends cdk.Stack {
       "SiteBucket",
       config.s3.bucketName
     );
+    bucket.grantPublicAccess();
 
-    const bucketPolicy = new iam.PolicyStatement({
-      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
-      // principals: [
-      //   new iam.CanonicalUserPrincipal(
-      //     cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
-      //   ),
-      // ],
-      resources: [bucket.arnForObjects("*")],
-    });
+    // const bucketPolicy = new iam.PolicyStatement({
+    //   actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
+    //   // principals: [
+    //   //   new iam.CanonicalUserPrincipal(
+    //   //     cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
+    //   //   ),
+    //   // ],
+    //   principals: [new iam.AnyPrincipal()],
 
-    bucket.addToResourcePolicy(bucketPolicy);
+    //   resources: [bucket.arnForObjects("*")],
+    // });
+
+    // bucket.addToResourcePolicy(bucketPolicy);
 
     // // TLS certificate
     // const { certificateArn } = new acm.DnsValidatedCertificate(
