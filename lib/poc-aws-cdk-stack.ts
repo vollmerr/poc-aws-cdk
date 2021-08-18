@@ -24,6 +24,9 @@ const config = {
   s3: {
     bucketName: "11os-staging",
   },
+  cloudfront: {
+    distributionId: "E1QGVGRXYXX8JZ",
+  },
 };
 
 export class PocAwsCdkStack extends cdk.Stack {
@@ -76,7 +79,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       resources: [
         "arn:aws:cloudfront:::*",
         "arn:aws:s3:::*",
-        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*"
+        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
       ],
     });
   }
@@ -101,6 +104,9 @@ export class PocAwsCdkStack extends cdk.Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
         privileged: true,
+        environmentVariables: {
+          CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+        },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         "./buildspecs/pull-request.yml"
@@ -129,6 +135,9 @@ export class PocAwsCdkStack extends cdk.Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
         privileged: true,
+        environmentVariables: {
+          CLOUDFRONT_DISTRO_ID: { value: config.cloudfront.distributionId },
+        },
       },
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         "./buildspecs/pull-request-merged.yml"
