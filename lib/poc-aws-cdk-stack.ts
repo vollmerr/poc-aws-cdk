@@ -16,6 +16,13 @@ import { StaticSiteStage } from "./static-site-stage";
 // const branch =
 //   "https://11cms-staging.guestinternet.com/portal-system/vollmerr-test-stuff/...";
 
+const config = {
+  github: {
+    owner: "vollmerr",
+    repo: "poc-aws-cdk",
+  },
+};
+
 export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
@@ -60,20 +67,26 @@ export class PocAwsCdkStack extends cdk.Stack {
     // const deployProd = new StaticSiteStage(this, "Deploy", props);
     // pipeline.addApplicationStage(deployProd);
 
-    const bucket = s3.Bucket.fromBucketName(this, "SiteBucket", "11os-staging");
+    const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OAI", {
+      comment: `OAI for ${id}`,
+    });
 
-    const cloudfrontOAI = new cloudfront.OriginAccessIdentity(
-      this,
-      "cloudfront-OAI",
-      {
-        comment: `OAI for ${id}`,
-      }
-    );
+    const bucket = s3.Bucket.fromBucketName(this, "SiteBucket", "11os-staging");
+    const bucketPolicy = new iam.PolicyStatement({
+      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
+      principals: [
+        new iam.CanonicalUserPrincipal(
+          cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
+        ),
+      ],
+      resources: [bucket.arnForObjects("*")],
+    });
+    bucket.addToResourcePolicy(bucketPolicy);
 
     // on pull request
     const prSource = codebuild.Source.gitHub({
-      owner: "vollmerr",
-      repo: "poc-aws-cdk",
+      owner: config.github.owner,
+      repo: config.github.repo,
       reportBuildStatus: true,
       webhookFilters: [
         codebuild.FilterGroup.inEventOf(
@@ -95,22 +108,27 @@ export class PocAwsCdkStack extends cdk.Stack {
       ),
     });
 
-    prProject.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:Put*"],
-        principals: [
-          new iam.CanonicalUserPrincipal(
-            cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
-          ),
-        ],
-        resources: [bucket.arnForObjects("*")],
-      })
-    );
+    const codeBuildPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "secretsmanager:GetSecretValue",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:Put*",
+      ],
+      resources: [
+        "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
+        "arn:aws:s3:::*",
+      ],
+    });
+
+    prProject.addToRolePolicy(codeBuildPolicy);
 
     // on merge pull request
     const mergeSource = codebuild.Source.gitHub({
-      owner: "eleven-software",
-      repo: "portal-api",
+      owner: config.github.owner,
+      repo: config.github.repo,
       reportBuildStatus: false,
       webhookFilters: [
         codebuild.FilterGroup.inEventOf(
@@ -130,17 +148,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ),
     });
 
-    mergeProject.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:Put*"],
-        principals: [
-          new iam.CanonicalUserPrincipal(
-            cloudfrontOAI.cloudFrontOriginAccessIdentityS3CanonicalUserId
-          ),
-        ],
-        resources: [bucket.arnForObjects("*")],
-      })
-    );
+    mergeProject.addToRolePolicy(codeBuildPolicy);
   }
 }
 
