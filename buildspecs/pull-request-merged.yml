@@ -10,11 +10,11 @@ phases:
       - BASE_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_BASE_REF | sed 's/refs\/heads\///')
       - HEAD_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
 
-      - echo "Promoting HEAD to BASE in S3 ($HEAD_BRANCH_NAME -> $BASE_BRANCH_NAME)"
-      - aws s3 sync s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME s3://poc-aws-cdk/portal-system/$BASE_BRANCH_NAME  --acl public-read
+      - echo "Promoting HEAD to BASE in S3 ($HEAD_BRANCH -> $BASE_BRANCH)"
+      - aws s3 sync s3://$S3_BUCKET/$GITHUB_REPO/$HEAD_BRANCH_NAME s3://$S3_BUCKET/$GITHUB_REPO/$BASE_BRANCH_NAME  --acl public-read
 
       - echo "Removing HEAD from S3 ($HEAD_BRANCH_NAME)"
-      - aws s3 rm s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME --recursive
+      - aws s3 rm s3://$S3_BUCKET/$GITHUB_REPO/$HEAD_BRANCH_NAME --recursive
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/portal-system/*"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"

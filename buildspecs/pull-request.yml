@@ -32,10 +32,10 @@ phases:
       # refs/heads/BRANCH_NAME -> BRANCH_NAME
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's/refs\/heads\///')
       - echo "Copying build to S3 ($BRANCH_NAME)"
-      - aws s3 sync build s3://poc-aws-cdk/portal-system/$BRANCH_NAME --acl public-read
+      - aws s3 sync build s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME --acl public-read
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/portal-system/*'
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/$GITHUB_REPO/*'
 
 artifacts:
   base-directory: ./build
