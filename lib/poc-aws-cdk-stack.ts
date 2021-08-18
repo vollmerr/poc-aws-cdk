@@ -30,6 +30,13 @@ export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
+    this.initializeBucket(id);
+    this.onPullRequest();
+    this.onPullRequestMerged();
+  }
+
+  // initializes a s3 bucket (existing one) with cloudfront access
+  private initializeBucket(id: string) {
     const cloudfrontOAI = new cloudfront.OriginAccessIdentity(this, "OAI", {
       comment: `OAI for ${id}`,
     });
@@ -39,6 +46,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       "SiteBucket",
       config.s3.bucketName
     );
+
     const bucketPolicy = new iam.PolicyStatement({
       actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
       principals: [
@@ -48,34 +56,13 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
       resources: [bucket.arnForObjects("*")],
     });
+
     bucket.addToResourcePolicy(bucketPolicy);
+  }
 
-    // on pull request
-    const prSource = codebuild.Source.gitHub({
-      owner: config.github.owner,
-      repo: config.github.repo,
-      reportBuildStatus: true,
-      webhookFilters: [
-        codebuild.FilterGroup.inEventOf(
-          codebuild.EventAction.PULL_REQUEST_CREATED,
-          codebuild.EventAction.PULL_REQUEST_UPDATED,
-          codebuild.EventAction.PULL_REQUEST_REOPENED
-        ),
-      ],
-    });
-
-    const prProject = new codebuild.Project(this, "portalSystemPr", {
-      source: prSource,
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-        privileged: true,
-      },
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        "./buildspecs/pull-request.yml"
-      ),
-    });
-
-    const codeBuildPolicy = new iam.PolicyStatement({
+  // base policy for running codebuild
+  private getCodeBuildBasePolicy() {
+    return new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
         "secretsmanager:GetSecretValue",
@@ -90,11 +77,41 @@ export class PocAwsCdkStack extends cdk.Stack {
         "arn:aws:s3:::*",
       ],
     });
+  }
 
-    prProject.addToRolePolicy(codeBuildPolicy);
+  // actions to take on pull request
+  private onPullRequest() {
+    const source = codebuild.Source.gitHub({
+      owner: config.github.owner,
+      repo: config.github.repo,
+      reportBuildStatus: true,
+      webhookFilters: [
+        codebuild.FilterGroup.inEventOf(
+          codebuild.EventAction.PULL_REQUEST_CREATED,
+          codebuild.EventAction.PULL_REQUEST_UPDATED,
+          codebuild.EventAction.PULL_REQUEST_REOPENED
+        ),
+      ],
+    });
 
-    // on merge pull request
-    const mergeSource = codebuild.Source.gitHub({
+    const project = new codebuild.Project(this, "portalSystemPr", {
+      source,
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
+        privileged: true,
+      },
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(
+        "./buildspecs/pull-request.yml"
+      ),
+    });
+
+    const codeBuildPolicy = this.getCodeBuildBasePolicy();
+    project.addToRolePolicy(codeBuildPolicy);
+  }
+
+  // actions to take on pull request merged
+  private onPullRequestMerged() {
+    const source = codebuild.Source.gitHub({
       owner: config.github.owner,
       repo: config.github.repo,
       reportBuildStatus: false,
@@ -105,8 +122,8 @@ export class PocAwsCdkStack extends cdk.Stack {
       ],
     });
 
-    const mergeProject = new codebuild.Project(this, "portalSystemPrMerged", {
-      source: mergeSource,
+    const project = new codebuild.Project(this, "portalSystemPrMerged", {
+      source,
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
         privileged: true,
@@ -116,15 +133,7 @@ export class PocAwsCdkStack extends cdk.Stack {
       ),
     });
 
-    mergeProject.addToRolePolicy(codeBuildPolicy);
+    const codeBuildPolicy = this.getCodeBuildBasePolicy();
+    project.addToRolePolicy(codeBuildPolicy);
   }
 }
-
-// merge to main
-//    deploy to staging/portal-system/main
-
-// create/update branch
-//    deploy to staging/portal-system/branch-name
-
-// delete branch
-//    delete staging/portal-system/branch-name

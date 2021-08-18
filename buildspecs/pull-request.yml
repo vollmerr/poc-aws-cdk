@@ -36,8 +36,8 @@ phases:
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | cut -d "/" -f 3)
       - aws s3 sync build s3://poc-aws-cdk/portal-system/$BRANCH_NAME
 
-      # - echo "Invalidating couldfront"
-      # - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
+      - echo "Invalidating couldfront"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
 
 artifacts:
   base-directory: ./build

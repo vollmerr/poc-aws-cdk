@@ -15,3 +15,6 @@ phases:
 
       - echo "Removing HEAD from S3"
       - aws s3 rm s3://poc-aws-cdk/portal-system/$HEAD_BRANCH_NAME --recursive
+
+      - echo "Invalidating couldfront"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths '/*'
