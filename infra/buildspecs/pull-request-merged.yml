@@ -19,7 +19,7 @@ phases:
       - echo "Promoting HEAD to BASE in S3 ($HEAD_S3_BUCKET -> $BASE_S3_BUCKET)"
       - aws s3 sync $HEAD_S3_BUCKET build
       # replace head's public url with base's public url
-      - find . -type f | xargs sed -i '"s|$HEAD_PUBLIC_URL|$BASE_PUBLIC_URL|g"
+      - find . -type f | xargs sed -i "s|$HEAD_PUBLIC_URL|$BASE_PUBLIC_URL|g"
       - aws s3 sync build $BASE_S3_BUCKET --acl public-read
 
       - echo "Removing HEAD from S3 ($HEAD_S3_BUCKET)"
