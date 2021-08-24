@@ -35,11 +35,14 @@ phases:
       - echo "Building the project ($PUBLIC_URL)"
       - npm run build
 
-      - echo "copying app builds to s3"
-      - for APP in ${APPS[@]};
+      - echo "Deploying apps"
+      - for APP in $APPS;
         do
-        S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "S3_BUCKET=$S3_BUCKET";
-        aws s3 sync build $S3_BUCKET --acl public-read;
+        echo "Setting environment variables for $APP"
+        APP_S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "APP_S3_BUCKET=$APP_S3_BUCKET";
+
+        echo "Deploying $APP to S3 ()"
+        aws s3 sync $APP/build $APP_S3_BUCKET --acl public-read;
         done
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"

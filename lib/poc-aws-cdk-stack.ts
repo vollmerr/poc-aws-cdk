@@ -9,6 +9,9 @@ const S3_BUCKET = "poc-aws-cdk";
 const DOMAIN = "staging.vollmerr.com";
 const APPS = ["app-one", "app-two"];
 
+const convertArrayForBash = (array: Array<string>) =>
+  array.toString().replace(",", " ");
+  
 const getBuildSpec = (name: string) => `./infra/buildspecs/${name}`;
 
 export class PocAwsCdkStack extends cdk.Stack {
@@ -41,9 +44,7 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
   }
 
-  private onMergeMain() {
-    
-  }
+  private onMergeMain() {}
 
   // actions to take on pull request
   private onPullRequest() {
@@ -71,7 +72,7 @@ export class PocAwsCdkStack extends cdk.Stack {
           DOMAIN: { value: DOMAIN },
           GITHUB_REPO: { value: GITHUB_REPO },
           S3_BUCKET: { value: S3_BUCKET },
-          APPS: { value: APPS },
+          APPS: { value: convertArrayForBash(APPS) },
         },
         privileged: true,
       },
@@ -109,7 +110,7 @@ export class PocAwsCdkStack extends cdk.Stack {
             DOMAIN: { value: DOMAIN },
             GITHUB_REPO: { value: GITHUB_REPO },
             S3_BUCKET: { value: S3_BUCKET },
-            APPS: { value: APPS },
+            APPS: { value: convertArrayForBash(APPS) },
           },
           privileged: true,
         },
