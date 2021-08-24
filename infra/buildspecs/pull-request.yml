@@ -38,14 +38,14 @@ phases:
       - echo "Copying build to S3 ($S3_BUCKET)"
       - aws s3 sync build $S3_BUCKET --acl public-read
 
-      # - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      # - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
+      - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
 
 artifacts:
   base-directory: ./build
   files:
-    - '**/*'
+    - "**/*"
 
 cache:
   paths:
-    - './node_modules/**/*'
+    - "./node_modules/**/*"

@@ -5,8 +5,7 @@
     "poc-aws-cdk": "bin/poc-aws-cdk.js"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
+    "build": "cd app-one && npm run build && cd ../app-two && npm run build",
     "test": "jest",
     "cdk": "cdk"
   },

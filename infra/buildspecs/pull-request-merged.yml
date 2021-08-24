@@ -25,5 +25,5 @@ phases:
       - echo "Removing HEAD from S3 ($HEAD_S3_BUCKET)"
       - aws s3 rm $HEAD_S3_BUCKET --recursive
 
-      # - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      # - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
+      - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
