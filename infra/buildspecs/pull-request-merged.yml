@@ -6,24 +6,15 @@ env:
 phases:
   build:
     commands:
-      - echo "Setting environment variables"
-      # CODEBUILD_WEBHOOK_BASE_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
-      - BASE_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_BASE_REF | sed 's|refs/heads/||') && echo "BASE_BRANCH_NAME=$BASE_BRANCH_NAME"
-      - BASE_S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BASE_BRANCH_NAME && echo "BASE_S3_BUCKET=$BASE_S3_BUCKET"
-      - BASE_PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BASE_BRANCH_NAME && echo "BASE_PUBLIC_URL=$BASE_PUBLIC_URL"
+      # CODEBUILD_WEBHOOK_HEAD_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
+      - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME"
 
-      - HEAD_BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "HEAD_BRANCH_NAME=$HEAD_BRANCH_NAME"
-      - HEAD_S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$HEAD_BRANCH_NAME && echo "HEAD_S3_BUCKET=$HEAD_S3_BUCKET"
-      - HEAD_PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$HEAD_BRANCH_NAME && echo "HEAD_PUBLIC_URL=$HEAD_PUBLIC_URL"
-
-      - echo "Promoting HEAD to BASE in S3 ($HEAD_S3_BUCKET -> $BASE_S3_BUCKET)"
-      - aws s3 sync $HEAD_S3_BUCKET build
-      # replace head's public url with base's public url
-      - find . -type f | xargs sed -i "s|$HEAD_PUBLIC_URL|$BASE_PUBLIC_URL|g"
-      - aws s3 sync build $BASE_S3_BUCKET --acl public-read
-
-      - echo "Removing HEAD from S3 ($HEAD_S3_BUCKET)"
-      - aws s3 rm $HEAD_S3_BUCKET --recursive
+      - echo "removing app builds from s3"
+      - for APP in $APPS
+        do
+        S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME && echo "S3_BUCKET=$S3_BUCKET"
+        aws s3 rm $S3_BUCKET --recursive
+        done
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/$BRANCH_NAME/*"

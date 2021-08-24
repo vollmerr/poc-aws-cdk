@@ -13,7 +13,7 @@ phases:
   build:
     commands:
       - echo "Setting environment variables"
-      # CODEBUILD_WEBHOOK_BASE_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
+      # CODEBUILD_WEBHOOK_HEAD_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME"
       - S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME && echo "S3_BUCKET=$S3_BUCKET"
       - PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME && echo "PUBLIC_URL=$PUBLIC_URL"
@@ -29,17 +29,21 @@ phases:
       # - echo "Running eslint"
       # - npm run lint
 
-      - echo "Running tests"
-      - npm run test
+      # - echo "Running tests"
+      # - npm run test
 
       - echo "Building the project ($PUBLIC_URL)"
       - npm run build
 
-      - echo "Copying build to S3 ($S3_BUCKET)"
-      - aws s3 sync build $S3_BUCKET --acl public-read
+      - echo "copying app builds to s3"
+      - for APP in $APPS
+        do
+        S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "S3_BUCKET=$S3_BUCKET"
+        aws s3 sync build $S3_BUCKET --acl public-read
+        done
 
       - echo "Invalidating couldfront ($CLOUDFRONT_DISTRO_ID)"
-      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/*"
+      - aws cloudfront create-invalidation --distribution-id=$CLOUDFRONT_DISTRO_ID --paths "/$GITHUB_REPO/$BRANCH_NAME/*"
 
 artifacts:
   base-directory: ./build

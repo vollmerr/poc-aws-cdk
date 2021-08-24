@@ -7,6 +7,7 @@ const GITHUB_REPO = "poc-aws-cdk";
 const GITHUB_OWNER = "vollmerr";
 const S3_BUCKET = "poc-aws-cdk";
 const DOMAIN = "staging.vollmerr.com";
+const APPS = ["app-one", "app-two"];
 
 const getBuildSpec = (name: string) => `./infra/buildspecs/${name}`;
 
@@ -65,6 +66,7 @@ export class PocAwsCdkStack extends cdk.Stack {
           DOMAIN: { value: DOMAIN },
           GITHUB_REPO: { value: GITHUB_REPO },
           S3_BUCKET: { value: S3_BUCKET },
+          APPS: { value: APPS },
         },
         privileged: true,
       },
@@ -72,7 +74,7 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
-    project.addToRolePolicy(codeBuildPolicy);
+    project.addToRolePolicy(codeBuildPolicy as any);
   }
 
   // actions to take on pull request merged
@@ -102,6 +104,7 @@ export class PocAwsCdkStack extends cdk.Stack {
             DOMAIN: { value: DOMAIN },
             GITHUB_REPO: { value: GITHUB_REPO },
             S3_BUCKET: { value: S3_BUCKET },
+            APPS: { value: APPS },
           },
           privileged: true,
         },
@@ -110,6 +113,6 @@ export class PocAwsCdkStack extends cdk.Stack {
     );
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
-    project.addToRolePolicy(codeBuildPolicy);
+    project.addToRolePolicy(codeBuildPolicy as any);
   }
 }
