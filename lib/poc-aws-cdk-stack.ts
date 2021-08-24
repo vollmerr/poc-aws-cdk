@@ -15,6 +15,7 @@ export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
+    this.onMergeMain();
     this.onPullRequest();
     this.onPullRequestMerged();
   }
@@ -38,6 +39,10 @@ export class PocAwsCdkStack extends cdk.Stack {
         "arn:aws:secretsmanager:*:*:secret:GITHUB_PACKAGES*",
       ],
     });
+  }
+
+  private onMergeMain() {
+    
   }
 
   // actions to take on pull request

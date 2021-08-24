@@ -11,7 +11,7 @@ phases:
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME"
 
       - echo "removing app builds from s3"
-      - for APP in $APPS;
+      - for APP in ${APPS[@]};
         do
         S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME && echo "S3_BUCKET=$S3_BUCKET";
         aws s3 rm $S3_BUCKET --recursive;
