@@ -16,7 +16,7 @@ phases:
       # CODEBUILD_WEBHOOK_HEAD_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME"
       # - S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME && echo "S3_BUCKET=$S3_BUCKET"
-      - PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME && echo "PUBLIC_URL=$PUBLIC_URL"
+      # - PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME && echo "PUBLIC_URL=$PUBLIC_URL"
 
       # - echo "Setting npm config"
       # - npm config set @eleven-software:registry https://npm.pkg.github.com
@@ -32,16 +32,23 @@ phases:
       # - echo "Running tests"
       # - npm run test
 
-      - echo "Building the project ($PUBLIC_URL)"
-      - npm run build
+      - echo "Building apps"
+      - for APP in $APPS;
+        do
+        echo "Setting environment variables for $APP";
+        PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
+
+        echo "Building $APP";
+        npm run build;
+        done
 
       - echo "Deploying apps"
       - for APP in $APPS;
         do
-        echo "Setting environment variables for $APP"
+        echo "Setting environment variables for $APP";
         APP_S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "APP_S3_BUCKET=$APP_S3_BUCKET";
 
-        echo "Deploying $APP to S3 ()"
+        echo "Deploying $APP to S3";
         aws s3 sync $APP/build $APP_S3_BUCKET --acl public-read;
         done
 
