@@ -6,6 +6,7 @@ env:
 phases:
   build:
     commands:
+      - echo "Setting environment variables"
       # CODEBUILD_WEBHOOK_HEAD_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
       - BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME"
 
