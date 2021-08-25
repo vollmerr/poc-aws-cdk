@@ -36,17 +36,17 @@ phases:
       - for APP in $APPS;
         do
         echo "Setting environment variables for $APP";
-        PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
+        PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$APP/$BRANCH_NAME && echo "PUBLIC_URL=$PUBLIC_URL";
 
         echo "Building $APP";
-        npm run build;
+        cd $APP && npm run build && cd ../;
         done
 
       - echo "Deploying apps"
       - for APP in $APPS;
         do
         echo "Setting environment variables for $APP";
-        APP_S3_BUCKET=s3://$S3_BUCKET/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "APP_S3_BUCKET=$APP_S3_BUCKET";
+        APP_S3_BUCKET=s3://$GITHUB_REPO-$APP-$BRANCH_NAME && echo "APP_S3_BUCKET=$APP_S3_BUCKET";
 
         echo "Deploying $APP to S3";
         aws s3 sync $APP/build $APP_S3_BUCKET --acl public-read;

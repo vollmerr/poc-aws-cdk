@@ -2,7 +2,7 @@ import * as cdk from "@aws-cdk/core";
 import * as codebuild from "@aws-cdk/aws-codebuild";
 import * as iam from "@aws-cdk/aws-iam";
 
-const CLOUDFRONT_DISTRO_ID = "E1QGVGRXYXX8JZ";
+const CLOUDFRONT_DISTRO_ID = "E1DHN5VLWL9KS9";
 const GITHUB_REPO = "poc-aws-cdk";
 const GITHUB_OWNER = "vollmerr";
 const S3_BUCKET = "poc-aws-cdk";
