@@ -67,7 +67,7 @@ export class PocAwsCdkStack extends cdk.Stack {
         output: sourceArtifact,
         codeBuildCloneOutput: true,
         connectionArn:
-          "arn:aws:codestar-connections:us-west-2:489354756207:connection/a25709ec-fd25-469d-9de7-ce50d961f883",
+          "arn:aws:codestar-connections:us-east-1:725107151777:connection/6309faec-5f05-4b88-8d62-e459014c18af",
       }),
       synthAction: new pipelines.SimpleSynthAction({
         cloudAssemblyArtifact: cloudAssemblyArtifact,
@@ -77,7 +77,7 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
 
     new cloudfront.Function(this, "redirect-to-index", {
-      code: FunctionCode.fromFile({ filePath: "./infra/lib/redirect-to-index.ts" }),
+      code: FunctionCode.fromFile({ filePath: "./infra/lib/redirect-to-index.js" }),
     });
 
     const staging = pipeline.addStage("staging");
