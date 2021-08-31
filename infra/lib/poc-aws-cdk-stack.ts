@@ -14,7 +14,7 @@ const CLOUDFRONT_DISTRO_ID = "E1DHN5VLWL9KS9";
 const GITHUB_REPO = "poc-aws-cdk";
 const GITHUB_OWNER = "vollmerr";
 const S3_BUCKET = "poc-aws-cdk";
-const DOMAIN = "vollmerr.com";
+const DOMAIN = "www.vollmerr.com";
 const APPS = ["app-one", "app-two"];
 
 const convertArrayForBash = (array: Array<string>) =>
