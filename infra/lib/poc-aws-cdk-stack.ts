@@ -96,7 +96,7 @@ export class PocAwsCdkStack extends cdk.Stack {
   }
 
   // actions to take on pull request
-  private onPullRequest(targetBranch: string = '') {
+  private onPullRequest(targetBranch: string = "") {
     const project = new codebuild.Project(this, "portalSystemPullRequest", {
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         getBuildSpec("pull-request.yml")
@@ -162,7 +162,13 @@ export class PocAwsCdkStack extends cdk.Stack {
         },
         privileged: true,
       },
-      source: this.getCodebuildOnMergeSource({ branchOrRef: "main" }),
+      source: this.getCodebuildOnMergeSource({
+        webhookFilters: [
+          codebuild.FilterGroup.inEventOf(
+            codebuild.EventAction.PULL_REQUEST_MERGED
+          ).andBranchIs("main"),
+        ],
+      }),
     });
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
