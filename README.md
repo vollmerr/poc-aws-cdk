@@ -13,3 +13,4 @@ There are existing resources in AWS that do not need to be created but instead m
             - select `Cloudfront Functions` for `Function Type`
             - select the `redirect-to-index` name that was generated for `Function ARN/Name` 
         - click `Create Behavior`
+
