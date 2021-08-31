@@ -38,7 +38,7 @@ phases:
       - for APP in $APPS;
         do
           echo "Building $APP";
-          PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
+          PUBLIC_URL=https://www.$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
           npm run build:$APP;
         done
 
