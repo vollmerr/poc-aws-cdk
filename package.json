@@ -6,8 +6,8 @@
   },
   "scripts": {
     "install": "cd app-one && npm i && cd ../app-two && npm i && cd ../",
-    "build:app-two": "cd app-one && npm run build && cd ../",
-    "build:app-one": "cd app-two && npm run build && cd ../",
+    "build:app-one": "cd app-one && npm run build && cd ../",
+    "build:app-two": "cd app-two && npm run build && cd ../",
     "test": "jest",
     "cdk": "cdk"
   },
