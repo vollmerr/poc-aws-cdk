@@ -1,14 +1,7 @@
 import * as cdk from "@aws-cdk/core";
 import * as codebuild from "@aws-cdk/aws-codebuild";
-import * as codepipeline from "@aws-cdk/aws-codepipeline";
-import * as codepipeline_actions from "@aws-cdk/aws-codepipeline-actions";
 import * as iam from "@aws-cdk/aws-iam";
-import * as pipelines from "@aws-cdk/pipelines";
-import * as route53 from "@aws-cdk/aws-route53";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
-
-import { PocAwsCdkStage } from "./poc-aws-cdk-stage";
-import { FunctionCode } from "@aws-cdk/aws-cloudfront";
 
 const CLOUDFRONT_DISTRO_ID = "E1DHN5VLWL9KS9";
 const GITHUB_REPO = "poc-aws-cdk";
@@ -37,7 +30,7 @@ export class PocAwsCdkStack extends cdk.Stack {
     // cloud front function for redirecting traffic to index.html
     // must be manually added to exisiting cloudfront behavior
     new cloudfront.Function(this, "redirect-to-index", {
-      code: FunctionCode.fromFile({
+      code: cloudfront.FunctionCode.fromFile({
         filePath: "./infra/lib/redirect-to-index.js",
       }),
     });
