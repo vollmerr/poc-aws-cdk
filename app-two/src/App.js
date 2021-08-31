@@ -12,7 +12,7 @@ function App() {
 
       <HashRouter>
         <Switch>
-          <Route path={"/"} component={HomePage} />
+          <Route exact path={"/"} component={HomePage} />
           <Route path={"/other"} component={OtherPage} />
           <Route path={"*"} component={NotFoundPage} />
         </Switch>
