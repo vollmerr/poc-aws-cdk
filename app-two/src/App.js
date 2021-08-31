@@ -1,4 +1,4 @@
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { HashRouter, Switch, Route, Link } from "react-router-dom";
 
 import "./App.css";
 import HomePage from "./HomePage";
@@ -10,7 +10,7 @@ function App() {
     <div className="App">
       <h1>App Two</h1>
 
-      <BrowserRouter>
+      <HashRouter>
         <Switch>
           <Route path={"/"} component={HomePage} />
           <Route path={"/other"} component={OtherPage} />
@@ -23,7 +23,7 @@ function App() {
         <div>
           <Link to={"/unknown"}>Bad link</Link>
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </div>
   );
 }
