@@ -26,9 +26,10 @@ export class PocAwsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    this.onMergeMain();
+    this.initializeResources();
     this.onPullRequest();
     this.onPullRequestMerged();
+    this.onMainMerged();
   }
 
   // base policy for running codebuild
@@ -52,78 +53,26 @@ export class PocAwsCdkStack extends cdk.Stack {
     });
   }
 
-  private onMergeMain() {
-    const sourceArtifact = new codepipeline.Artifact();
-    const cloudAssemblyArtifact = new codepipeline.Artifact();
-
-    const pipeline = new pipelines.CdkPipeline(this, "portalSystemMergeMain", {
-      cloudAssemblyArtifact: cloudAssemblyArtifact,
-      selfMutating: true,
-      sourceAction: new codepipeline_actions.CodeStarConnectionsSourceAction({
-        owner: GITHUB_OWNER,
-        repo: GITHUB_REPO,
-        branch: "main",
-        actionName: "Github",
-        output: sourceArtifact,
-        codeBuildCloneOutput: true,
-        connectionArn:
-          "arn:aws:codestar-connections:us-west-2:489354756207:connection/a25709ec-fd25-469d-9de7-ce50d961f883",
-      }),
-      synthAction: new pipelines.SimpleSynthAction({
-        cloudAssemblyArtifact: cloudAssemblyArtifact,
-        sourceArtifact: sourceArtifact,
-        synthCommand: "npx cdk synth",
-      }),
+  private getCodebuildOnMergeSource(
+    overrides: Partial<codebuild.GitHubSourceProps> = {}
+  ) {
+    return codebuild.Source.gitHub({
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
+      reportBuildStatus: false,
+      webhookFilters: [
+        codebuild.FilterGroup.inEventOf(
+          codebuild.EventAction.PULL_REQUEST_MERGED
+        ),
+      ],
+      ...overrides,
     });
-
-    new cloudfront.Function(this, "redirect-to-index", {
-      code: FunctionCode.fromFile({ filePath: "./infra/lib/redirect-to-index.ts" }),
-    });
-
-    const staging = pipeline.addStage("staging");
-
-    const project = new codebuild.PipelineProject(this, "staging", {
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(
-        getBuildSpec("pull-request.yml")
-      ),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-        environmentVariables: {
-          CLOUDFRONT_DISTRO_ID: { value: CLOUDFRONT_DISTRO_ID },
-          DOMAIN: { value: DOMAIN },
-          GITHUB_REPO: { value: GITHUB_REPO },
-          S3_BUCKET: { value: S3_BUCKET },
-          APPS: { value: convertArrayForBash(APPS) },
-          TARGET_BRANCH: { value: "staging" },
-        },
-        privileged: true,
-      },
-    });
-
-    const action = new codepipeline_actions.CodeBuildAction({
-      actionName: "staging",
-      project,
-      input: sourceArtifact,
-    });
-
-    const codeBuildPolicy = this.getCodeBuildBasePolicy();
-    project.addToRolePolicy(codeBuildPolicy);
-    staging.addActions(action);
   }
 
-  private getPipelineStageStaging() {
-    // const domainName = "vollmerr.com";
-    // /**
-    //  * zone distribution is hosted in, cannot be in nested stack so passed in
-    //  * https://github.com/aws-samples/aws-cdk-examples/issues/238
-    //  */
-    // const zone = route53.HostedZone.fromLookup(this, "Zone", { domainName });
-    // return new PocAwsCdkStage(this, "staging", { domainName, zone });
-  }
-
-  // actions to take on pull request
-  private onPullRequest() {
-    const source = codebuild.Source.gitHub({
+  private getCodebuildOnPullRequestSource(
+    overrides: Partial<codebuild.GitHubSourceProps> = {}
+  ) {
+    return codebuild.Source.gitHub({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
       reportBuildStatus: true,
@@ -134,8 +83,20 @@ export class PocAwsCdkStack extends cdk.Stack {
           codebuild.EventAction.PULL_REQUEST_REOPENED
         ),
       ],
+      ...overrides,
     });
+  }
 
+  private initializeResources() {
+    new cloudfront.Function(this, "redirect-to-index", {
+      code: FunctionCode.fromFile({
+        filePath: "./infra/lib/redirect-to-index.js",
+      }),
+    });
+  }
+
+  // actions to take on pull request
+  private onPullRequest(targetBranch: string = '') {
     const project = new codebuild.Project(this, "portalSystemPullRequest", {
       buildSpec: codebuild.BuildSpec.fromSourceFilename(
         getBuildSpec("pull-request.yml")
@@ -148,10 +109,11 @@ export class PocAwsCdkStack extends cdk.Stack {
           GITHUB_REPO: { value: GITHUB_REPO },
           S3_BUCKET: { value: S3_BUCKET },
           APPS: { value: convertArrayForBash(APPS) },
+          TARGET_BRANCH: { value: targetBranch },
         },
         privileged: true,
       },
-      source,
+      source: this.getCodebuildOnPullRequestSource(),
     });
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
@@ -160,17 +122,6 @@ export class PocAwsCdkStack extends cdk.Stack {
 
   // actions to take on pull request merged
   private onPullRequestMerged() {
-    const source = codebuild.Source.gitHub({
-      owner: GITHUB_OWNER,
-      repo: GITHUB_REPO,
-      reportBuildStatus: false,
-      webhookFilters: [
-        codebuild.FilterGroup.inEventOf(
-          codebuild.EventAction.PULL_REQUEST_MERGED
-        ),
-      ],
-    });
-
     const project = new codebuild.Project(
       this,
       "portalSystemPullRequestMerged",
@@ -186,9 +137,33 @@ export class PocAwsCdkStack extends cdk.Stack {
           },
           privileged: true,
         },
-        source,
+        source: this.getCodebuildOnMergeSource(),
       }
     );
+
+    const codeBuildPolicy = this.getCodeBuildBasePolicy();
+    project.addToRolePolicy(codeBuildPolicy);
+  }
+
+  private onMainMerged() {
+    const project = new codebuild.Project(this, "portalSystemMainMerged", {
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(
+        getBuildSpec("pull-request.yml")
+      ),
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
+        environmentVariables: {
+          CLOUDFRONT_DISTRO_ID: { value: CLOUDFRONT_DISTRO_ID },
+          DOMAIN: { value: DOMAIN },
+          GITHUB_REPO: { value: GITHUB_REPO },
+          S3_BUCKET: { value: S3_BUCKET },
+          APPS: { value: convertArrayForBash(APPS) },
+          TARGET_BRANCH: { value: "main" },
+        },
+        privileged: true,
+      },
+      source: this.getCodebuildOnMergeSource({ branchOrRef: "main" }),
+    });
 
     const codeBuildPolicy = this.getCodeBuildBasePolicy();
     project.addToRolePolicy(codeBuildPolicy);

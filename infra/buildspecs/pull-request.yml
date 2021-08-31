@@ -13,11 +13,10 @@ phases:
   build:
     commands:
       - echo "Setting environment variables"
-      - if [ $TARGET_BRANCH ]
+      - if [[ $TARGET_BRANCH != '' ]]; 
         then
           BRANCH_NAME=$TARGET_BRANCH;
         else 
-          # CODEBUILD_WEBHOOK_BASE_REF=refs/heads/BRANCH_NAME, extract BRANCH_NAME
           BRANCH_NAME=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed 's|refs/heads/||') && echo "BRANCH_NAME=$BRANCH_NAME";
         fi
 
@@ -39,8 +38,8 @@ phases:
       - for APP in $APPS;
         do
           echo "Building $APP";
-          PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
-          yarn build:$APP;
+          PUBLIC_URL=https://www.$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
+          npm run build:$APP;
         done
 
       - echo "Deploying apps"
