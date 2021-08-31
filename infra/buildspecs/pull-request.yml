@@ -13,7 +13,7 @@ phases:
   build:
     commands:
       - echo "Setting environment variables"
-      - if [ $TARGET_BRANCH ]
+      - if [ $TARGET_BRANCH ]; 
         then
           BRANCH_NAME=$TARGET_BRANCH;
         else 
