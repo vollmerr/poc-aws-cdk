@@ -39,7 +39,7 @@ phases:
         do
           echo "Building $APP";
           PUBLIC_URL=https://$DOMAIN/$GITHUB_REPO/$BRANCH_NAME/$APP && echo "PUBLIC_URL=$PUBLIC_URL";
-          yarn build:$APP;
+          npm run build:$APP;
         done
 
       - echo "Deploying apps"
